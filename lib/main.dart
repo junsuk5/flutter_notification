@@ -77,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // 화면 뜨자마자
     // foreground fcm 수신 처리
     subscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final title = message.data['title'];
-      final body = message.data['body'];
+      final title = message.notification?.title ?? '';
+      final body = message.notification?.body ?? '';
 
       log('foreground fcm');
 
