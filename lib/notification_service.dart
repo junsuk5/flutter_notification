@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -131,6 +132,13 @@ class NotificationService {
   }
 
   Future<bool> get permissionNotification async {
+    // fcm 받고 노티 띄울 때 requestPermission 을 호출하면 터짐
+    final status = await Permission.notification.status;
+
+    if (status.isGranted) {
+      return true;
+    }
+
     if (Platform.isAndroid) {
       return await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<

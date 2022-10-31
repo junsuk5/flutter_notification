@@ -18,7 +18,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await notification.initializeTimeZone();
   await notification.initializeNotification();
 
-  notification.showNotification(1, 'fcm title', 'fcm body');
+  final title = message.data['title'];
+  final body = message.data['body'];
+
+  notification.showNotification(1, title, body);
 
   print('Handling a background message ${message.messageId}');
 }
@@ -77,8 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
     // 화면 뜨자마자
     // foreground fcm 수신 처리
     subscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final title = message.notification?.title ?? '';
-      final body = message.notification?.body ?? '';
+
+      // 테스트
+      // final title = message.notification?.title ?? '';
+      // final body = message.notification?.body ?? '';
+
+      // POST 메시지
+      final title = message.data['title'];
+      final body = message.data['body'];
 
       log('foreground fcm');
 
