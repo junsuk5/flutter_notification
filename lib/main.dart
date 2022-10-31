@@ -1,14 +1,44 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_notification/notification_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 final notification = NotificationService();
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await notification.initializeTimeZone();
+  await notification.initializeNotification();
+
+  notification.showNotification(1, 'fcm title', 'fcm body');
+
+  print('Handling a background message ${message.messageId}');
+}
 
 void main() async {
   // 라이브러리들 사용중에 이 코드가 먼저 실행되어야 되는 놈들이 좀 있음
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   await notification.initializeTimeZone();
   await notification.initializeNotification();
+
+
+  final token = await FirebaseMessaging.instance.getToken();
+  log(token.toString());
 
   runApp(const MyApp());
 }
@@ -37,6 +67,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  StreamSubscription<RemoteMessage>? subscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 화면 뜨자마자
+    // foreground fcm 수신 처리
+    subscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final title = message.data['title'];
+      final body = message.data['body'];
+
+      log('foreground fcm');
+
+      notification.showNotification(1, title, body);
+    });
+  }
+
+  @override
+  void dispose() {
+    // 화면을 나갈 때
+    subscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +102,15 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
-            final result = await notification.showNotification(1, 'title', 'body');
+            final result =
+                await notification.showNotification(1, 'title', 'body');
+
+            // notification.addScheduledNotification(
+            //   id: 1,
+            //   alarmTimeStr: '16:00',
+            //   title: 'title',
+            //   body: 'body',
+            // );
 
             if (result == false) {
               // 안내
