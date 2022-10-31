@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (!mounted) {
                 return;
               }
-              _showMyDialog(context);
+              _showMyDialog();
             }
           },
           child: const Text('로컬 노티'),
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _showMyDialog(BuildContext context) async {
+  Future<void> _showMyDialog() async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
