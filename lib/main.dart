@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_notification/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_notification/push_service.dart';
 import 'firebase_options.dart';
 
 final notification = NotificationService();
@@ -39,7 +40,6 @@ void main() async {
   await notification.initializeTimeZone();
   await notification.initializeNotification();
 
-
   final token = await FirebaseMessaging.instance.getToken();
   log(token.toString());
 
@@ -70,7 +70,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   StreamSubscription<RemoteMessage>? subscription;
 
   @override
@@ -80,7 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     // 화면 뜨자마자
     // foreground fcm 수신 처리
     subscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-
       // 테스트
       // final title = message.notification?.title ?? '';
       // final body = message.notification?.body ?? '';
@@ -109,27 +107,37 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('노티'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            final result =
-                await notification.showNotification(1, 'title', 'body');
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                final result =
+                    await notification.showNotification(1, 'title', 'body');
 
-            // notification.addScheduledNotification(
-            //   id: 1,
-            //   alarmTimeStr: '16:00',
-            //   title: 'title',
-            //   body: 'body',
-            // );
+                // notification.addScheduledNotification(
+                //   id: 1,
+                //   alarmTimeStr: '16:00',
+                //   title: 'title',
+                //   body: 'body',
+                // );
 
-            if (result == false) {
-              // 안내
-              if (!mounted) {
-                return;
-              }
-              _showMyDialog();
-            }
-          },
-          child: const Text('로컬 노티'),
+                if (result == false) {
+                  // 안내
+                  if (!mounted) {
+                    return;
+                  }
+                  _showMyDialog();
+                }
+              },
+              child: const Text('로컬 노티'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                PushService.sendPush('제목', '내용');
+              },
+              child: const Text('FCM'),
+            ),
+          ],
         ),
       ),
     );
